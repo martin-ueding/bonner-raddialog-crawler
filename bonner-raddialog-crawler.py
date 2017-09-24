@@ -5,11 +5,33 @@
 
 import argparse
 import re
+import os
 
 from bs4 import BeautifulSoup
 import requests
 import xml.etree.ElementTree as ET
 import yaml
+
+
+def parse_comment(tag):
+    meta = tag.select('div.submitted')[0]
+
+    date = re.search(r'(\d+\. \w+. \d+)', meta.text).group(1)
+    time = re.search(r'(\d+:\d+)', meta.text).group(1)
+    author = meta.select('span.username')[0].text
+
+    body = tag.select('article > div.content-wrapper > div.comment-body')[0]
+
+    title = tag.select('a.permalink')[0].text
+    paragraphs = tag.select('div.field-name-comment-body p')
+
+    return dict(
+        date=date,
+        time=time,
+        author=author,
+        title=title,
+        text=[p.text for p in paragraphs],
+    )
 
 
 def parse_post(url):
@@ -40,6 +62,19 @@ def parse_post(url):
 
     next_ = 'https://www.raddialog.bonn.de' + soup.select('a.proposal-next')[0]['href']
 
+    top_comments = soup.select('#comments > div.comment-wrapper')
+
+    comments = []
+
+    for top_comment in top_comments:
+        parsed = parse_comment(top_comment)
+
+        sub_comments = top_comment.select('div.all-replies div.content-wrapper')
+        sub_parsed = list(map(parse_comment, sub_comments))
+
+        parsed['answers'] = sub_parsed
+        comments.append(parsed)
+
     return dict(
         date=date,
         author=author,
@@ -49,6 +84,7 @@ def parse_post(url):
         url=url,
         votes=votes,
         next=next_,
+        comments=comments,
     )
 
 
@@ -57,19 +93,22 @@ def main():
 
     url = 'https://www.raddialog.bonn.de/dialoge/bonner-rad-dialog/fahrbahnbelag-bei-naesse-extrem-rutschig'
 
-    parsed = parse_post(url)
+    storage = 'posts.yml'
+    
+    if os.path.isfile(storage):
+        with open(storage) as f:
+            posts = yaml.load(f)
+    else:
+        posts = {}
 
-    print(yaml.dump(parsed))
+    while True:
+        print(url)
+        parsed = parse_post(url)
+        posts[url] = parsed
+        url = parsed['next']
 
-    '''
-
-      <p class="user-and-date inline">
-                      von <span class="username">Miss Construction</span> am 24.09.2017               </p>
-
-                      <div class="leftside node-main-content">
-
-                      field field-name-body field-type-text-with-summary field-label-hidden
-    '''
+        with open(storage, 'w') as f:
+            yaml.dump(posts, f)
 
 
 def _parse_args():
