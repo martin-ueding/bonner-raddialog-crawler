@@ -66,6 +66,8 @@ def parse_post(url):
 
     title = soup.select('h2.node-title')[0].text
 
+    category = soup.select('div.category_button a')[0].text
+
     top_comments = soup.select('#comments > div.comment-wrapper')
     comments = []
     for top_comment in top_comments:
@@ -83,6 +85,7 @@ def parse_post(url):
         text=[p.text for p in paragraphs],
         lat=lat,
         lon=lon,
+        category=category,
         url=url,
         title=title,
         votes=votes,
@@ -94,7 +97,7 @@ def parse_post(url):
 def main():
     options = _parse_args()
 
-    url = 'https://www.raddialog.bonn.de/dialoge/bonner-rad-dialog/fahrbahnbelag-bei-naesse-extrem-rutschig'
+    url = 'https://www.raddialog.bonn.de/dialoge/bonner-rad-dialog/entschaerfung-der-180-grad-kehren-bei-aufabfahrt-nordbruecke'
 
     storage = 'posts.yml'
     
