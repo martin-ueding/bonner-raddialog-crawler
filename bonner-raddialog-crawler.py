@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Copyright © 2017 Martin Ueding <dev@martin-ueding.de>
+# Licensed under the MIT/Expat license.
 
 import argparse
 import re
@@ -20,10 +21,10 @@ def parse_comment(tag):
     time = re.search(r'(\d+:\d+)', meta.text).group(1)
     author = meta.select('span.username')[0].text
 
-    body = tag.select('article > div.content-wrapper > div.comment-body')[0]
+    body = tag.select('div.content-wrapper > div.comment-body')[0]
 
     title = tag.select('a.permalink')[0].text
-    paragraphs = tag.select('div.field-name-comment-body p')
+    paragraphs = body.select('div.field-name-comment-body p')
 
     return dict(
         date=date,
@@ -45,13 +46,10 @@ def parse_post(url):
         lat, lon = map(float, m.groups())
 
     soup = BeautifulSoup(r.text, 'html.parser')
-    #print(soup)
 
     s = soup.select('p.user-and-date')[0]
 
-    m = re.search(r'(\d{2}\.\d{2}\.\d{4})', s.text)
-    date = m.group(1)
-
+    date = re.search(r'(\d{2}\.\d{2}\.\d{4})', s.text).group(1)
     author = s.select('span.username')[0].text
 
     paragraphs = soup.select('div.node-main-content p')
@@ -60,16 +58,20 @@ def parse_post(url):
     if m:
         votes = int(m.group(1))
 
-    next_ = 'https://www.raddialog.bonn.de' + soup.select('a.proposal-next')[0]['href']
+    tags_next = soup.select('a.proposal-next')
+    if len(tags_next) > 0:
+        next_ = 'https://www.raddialog.bonn.de' + tags_next[0]['href']
+    else:
+        next_ = None
+
+    title = soup.select('h2.node-title')[0].text
 
     top_comments = soup.select('#comments > div.comment-wrapper')
-
     comments = []
-
     for top_comment in top_comments:
         parsed = parse_comment(top_comment)
 
-        sub_comments = top_comment.select('div.all-replies div.content-wrapper')
+        sub_comments = top_comment.select('div.all-replies div.indented')
         sub_parsed = list(map(parse_comment, sub_comments))
 
         parsed['answers'] = sub_parsed
@@ -82,6 +84,7 @@ def parse_post(url):
         lat=lat,
         lon=lon,
         url=url,
+        title=title,
         votes=votes,
         next=next_,
         comments=comments,
