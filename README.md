@@ -42,6 +42,26 @@ aber keine Antworten enthält.
 
 Diese YAML Datei kann man dann nach Belieben weiterverarbeiten.
 
+## Nutzung der Daten
+
+In den [Regeln des Rad-Dialogs](https://www.raddialog.bonn.de/regeln) steht zur
+Lizenz der von Nutzern geschriebenen Beiträgen:
+
+> 8. Lizenz und Urheberrecht
+>
+> Alle von den Teilnehmenden eingestellten Inhalte stehen unter der [CC
+> by-Lizenz](https://creativecommons.org/licenses/by/4.0/), das heißt sie
+> dürfen unter Nennung des (Nutzer-)Namens des Autors, sowie der URL der
+> jeweiligen Seite auf dieser Plattform unentgeltlich weiter verwendet werden.
+> Inhalte, zu deren Verwendung die Teilnehmenden im Rahmen dieses
+> Online-Dialogs nicht berechtigt sind, dürfen nicht eingespeist werden. Die
+> Teilnehmenden müssen selber prüfen, ob diese Berechtigung vorliegt.
+
+Somit ist es also erlaubt, diese Daten herunterzuladen und wieder zu
+veröffentlichen, solange die Namen der Nutzer erhalten bleiben.
+
+Natürlich sollten diese Daten respektvoll genutzt werden.
+
 ## Abhängigkeiten
 
 Das Skript braucht Python 3 und folgende Bibliotheken:
@@ -50,7 +70,7 @@ Das Skript braucht Python 3 und folgende Bibliotheken:
 - `requests` (Herunterladen der Seiten)
 - `yaml` (Ausgabeformat)
 
-## Lizenz
+## Lizenz des Skripts
 
 Das Skript ist unter der MIT/Expat Lizenz veröffentlicht.
 
