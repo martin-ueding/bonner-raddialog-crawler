@@ -104,7 +104,7 @@ def main():
     else:
         posts = {}
 
-    while True:
+    while url is not None:
         print(url)
         parsed = parse_post(url)
         posts[url] = parsed
