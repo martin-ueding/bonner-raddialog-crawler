@@ -22,6 +22,7 @@ Mit dem Programm `make-table.py` habe ich die YAML Datei schon in eine flache Ta
 
 ```{r}
 data <- read.csv('posts.csv')
+data$date <- as.Date(data$date, format = '%d.%m.%Y')
 ```
 
 # Anzahl der Einreichungen
@@ -64,13 +65,19 @@ Nun nehme ich mal die anonymen Beiträge raus.
 
 ```{r}
 by.name.count <- author.count[!author.count$author == 'Gast', ]
+
+o <- rev(order(by.name.count$n))
+by.name.count <- author.count %>%
+    filter(author != 'Gast') %>%
+    arrange(-n) %>%
+    mutate(Author = factor(author, levels = author[order(n)]))
 ```
 
 Damit können wir erneut ein Balkendiagram erstellen.
 
 ```{r}
-ggplot(by.name.count, aes(x = author, y = n)) +
-    geom_bar(stat = 'identity') +
+ggplot(head(by.name.count, 20), aes(x = Author, y = n)) +
+    geom_col() +
     coord_flip() +
     labs(title = 'Einreichungen pro Autor',
          x = 'Autor', y = 'Einreichungen')
@@ -92,11 +99,12 @@ datum <- data %>%
     summarize(n = n())
 
 ggplot(datum, aes(x = date, y = n)) +
-    geom_bar(stat = 'identity') +
-    coord_flip() +
+    geom_col() +
     labs(title = 'Einreichungen nach Tag',
          x = 'Datum', y = 'Einreichungen')
 ```
+
+Am Anfang gab es viel Aktivität, in den letzten Tagen dann auch nochmal viel.
 
 ## Nach Kategorie
 
@@ -110,5 +118,23 @@ ggplot(by.category, aes(x = category, y = n)) +
     coord_flip() +
     labs(title = 'Einreichungen nach Kategorie',
          x = 'Kategorie', y = 'Einreichungen')
+```
+
+# Position der Stellen
+
+Es sollte eine akzeptable Näherung sein direkt die Länge und Breite darzustellen.
+
+```{r}
+ggplot(data, aes(x = lon, y = lat)) +
+    geom_point()
+```
+
+Man kann hier ziemlich gut den Umriss von Bonn erkennen, mit Godesberg.
+
+In der Mitte tummelt es sich allerdings, sodass hier ein 2D Histogram interessant sein sollte. Wenig überraschend ist die Innenstadt am häufigsten genannt worden.
+
+```{r}
+ggplot(data, aes(x = lon, y = lat)) +
+    geom_hex(bins = 100)
 ```
 
