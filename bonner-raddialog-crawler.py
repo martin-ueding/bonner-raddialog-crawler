@@ -54,9 +54,12 @@ def parse_post(url):
 
     paragraphs = soup.select('div.node-main-content p')
 
-    m = re.search(r'(\d+)', soup.select('div.rate-info')[0].text)
-    if m:
-        votes = int(m.group(1))
+    try:
+        m = re.search(r'(\d+)', soup.select('div.rate-info')[0].text)
+        if m:
+            votes = int(m.group(1))
+    except IndexError:
+        votes = 0
 
     tags_next = soup.select('a.proposal-next')
     if len(tags_next) > 0:
@@ -97,7 +100,7 @@ def parse_post(url):
 def main():
     options = _parse_args()
 
-    url = 'https://www.raddialog.bonn.de/dialoge/bonner-rad-dialog/entschaerfung-der-180-grad-kehren-bei-aufabfahrt-nordbruecke'
+    url = 'https://www.raddialog.bonn.de/dialoge/gefahrenstelle-tankstelle'
 
     storage = 'posts.yml'
     
