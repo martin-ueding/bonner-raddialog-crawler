@@ -13,7 +13,7 @@ import yaml
 def main():
     options = _parse_args()
 
-    with open('posts2.yml') as f:
+    with open('posts.yml') as f:
         data = yaml.load(f)
 
     with open('posts.csv', 'w') as f:
