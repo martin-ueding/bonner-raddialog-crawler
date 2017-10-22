@@ -1,0 +1,114 @@
+---
+title: "Martins Bonner Rad-Dialog Auswertung"
+output:
+  pdf_document: default
+  html_document:
+    theme: readable
+---
+
+```{r, include=FALSE}
+library(dplyr)
+library(ggplot2)
+library(tagcloud)
+
+theme_set(theme_light())
+```
+
+Dies ist meine Auswertung der Daten, die ich aus dem Bonner Rad-Dialog extrahiert habe. Die Einreichungen der Nutzer stehen unter der [CC-BY 4.0 Lizenz](https://creativecommons.org/licenses/by/4.0/) und dürfen daher hier unter Namensnennung genutzt werden.
+
+# Laden der Daten
+
+Mit dem Programm `make-table.py` habe ich die YAML Datei schon in eine flache Tabelle umgewandelt. So kann diese jetzt eingelesen werden.
+
+```{r}
+data <- read.csv('posts.csv')
+```
+
+# Anzahl der Einreichungen
+
+## Nach Autor
+
+Zuerst möchte ich schauen, wie viele Autoren es gibt und wie die Verteilung der Einträge unter den Autoren ist.
+
+```{r}
+author.count <- data %>%
+    group_by(author) %>%
+    summarize(n = n())
+
+ggplot(author.count, aes(x = author, y = n)) +
+    geom_bar(stat='identity') +
+    coord_flip() +
+    labs(title = 'Einreichungen pro Autor',
+         x = 'Autor', y = 'Einreichungen')
+```
+
+Das ist in dieser Form nicht sinnvoll, weil es zu viele verschiedene Autoren gibt. Vielleicht mit einer Tagcloud?
+
+```{r}
+tagcloud(author.count$author, weights = author.count$n)
+```
+
+Die anonymen Beiträge als »Gast« verzerren das ganze Bild. Wie viele Eintragungen sind denn anonym erstellt worden?
+
+```{r}
+author.count[author.count$author == 'Gast', ]$n
+```
+
+Und welchem prozentualen Anteil entspricht dies?
+
+```{r}
+author.count[author.count$author == 'Gast', ]$n / length(data[, 1]) * 100
+```
+
+Nun nehme ich mal die anonymen Beiträge raus.
+
+```{r}
+by.name.count <- author.count[!author.count$author == 'Gast', ]
+```
+
+Damit können wir erneut ein Balkendiagram erstellen.
+
+```{r}
+ggplot(by.name.count, aes(x = author, y = n)) +
+    geom_bar(stat = 'identity') +
+    coord_flip() +
+    labs(title = 'Einreichungen pro Autor',
+         x = 'Autor', y = 'Einreichungen')
+```
+
+Dies ist wieder nicht so richtig hilfreich, hier hilft die Tagcloud allerdings sehr:
+
+```{r}
+tagcloud(by.name.count$author, weights = by.name.count$n)
+```
+
+## Nach Datum
+
+Ebenfalls interessant ist, wie sich die Einreichungen auf die einzelnen Tage verteilen.
+
+```{r}
+datum <- data %>%
+    group_by(date) %>%
+    summarize(n = n())
+
+ggplot(datum, aes(x = date, y = n)) +
+    geom_bar(stat = 'identity') +
+    coord_flip() +
+    labs(title = 'Einreichungen nach Tag',
+         x = 'Datum', y = 'Einreichungen')
+```
+
+## Nach Kategorie
+
+```{r}
+by.category <- data %>%
+    group_by(category) %>%
+    summarize(n = n())
+
+ggplot(by.category, aes(x = category, y = n)) +
+    geom_bar(stat = 'identity') +
+    coord_flip() +
+    labs(title = 'Einreichungen nach Kategorie',
+         x = 'Kategorie', y = 'Einreichungen')
+```
+
